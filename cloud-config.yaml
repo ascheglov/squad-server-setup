@@ -1,0 +1,80 @@
+#cloud-config
+packages:
+  - lib32gcc1
+  - wget
+  - ca-certificates
+users:
+  - name: admin
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAsbP2NWjLUMLH5dIjwZx44VI2cJ++YmOvNi9U9lKH77Cq0Tex8dfS2SbixDyGonlXP77iHRlvqkYYlRxtIdqnPSjt1wNIQP7TTLM5Nqq2h0VNb7dWGZ5X4/exalDQndIa5T97SgncooLDshS3eGe0Mm/7Tpchrc4QOqtdfJoBMjACUZEPLNuicpKGexUt0E+OncVHmbFp0bjJoHTUbNUQFLhDKWsmBEbaxiyCTqRXIuVeZhFSj5lD5ezAtVp8V8A4sldoAVtwbkBJKcqqCx4XZGx8U6zyHyIgJOcK6AvqfalNpA4GlpAVh94kAxBjv+Js8MIahbIGPF2yirWG335PEQ== me@home
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfGkjydwgjvOG/1eeODMws5oMBWuTK2jajgXxpHC5H2PItz/wQBv058dHGQPkAX4Mg8dkfDpUnUvPc0Vn6YNbp4btSmwDUwdcWsdvMZi1re7jp3mArWznSsxlDsqCKs0vvB/0URbEHL0XXQWppUchWvlHI56iZEOoqAfNpAqlpER4eT4qmLyRLQald0+6W9m73CQBqSem6dY8e3FCtZbdxqf1GETErokeBZRYL29XKKli1pXCC3alJBgaCpvqlpnWN9AiSYEnHePVUVdj8oqPj1KgR005WD//WfOmInDUYds9VrJoGEU1j7DwuBPKUp+WoAEIe6DOf+7+WNnA1ZUDn me@work
+  - name: squad
+    sudo: False
+write_files:
+  - path: /home/squad/run-server.sh
+    permissions: '0555'
+    content: |
+      #!/usr/bin/env bash
+      set -e
+      /home/squad/steamcmd/steamcmd.sh +login anonymous +force_install_dir /home/squad/server +app_update 403240 +quit
+      /home/squad/server/SquadGameServer.sh Port=7787 QueryPort=27165
+  - path: /etc/systemd/system/squad.service
+    content: |
+      [Unit]
+      Description=Squad Server
+      Wants=network-online.target
+      After=network-online.target
+      StartLimitIntervalSec=0
+
+      [Service]
+      Type=simple
+      Restart=always
+      RestartSec=1
+      User=squad
+      ExecStart=/bin/bash /home/squad/run-server.sh
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: /home/squad/MapRotation.cfg
+    content: |
+      Jensen's Range v1
+  - path: /home/squad/Admins.cfg
+    content: |
+      Group=All:changemap,pause,cheat,private,balance,chat,kick,ban,config,cameraman,immunity,featuretest,reserve,debug,teamchange,forceteamchange,canseeadminchat
+      Group=Mod:changemap,cheat,chat,cameraman,featuretest,reserve,teamchange,forceteamchange
+      Admin=76561198126672787:All
+      Admin=76561198012819918:Mod
+  - path: /home/squad/setup.sh
+    permissions: '0555'
+    content: |
+      #!/usr/bin/env bash
+      set -e
+
+      # Download steamcmd.
+      mkdir /home/squad/steamcmd
+      cd /home/squad/steamcmd
+      wget 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz' -O setup_steamcmd.tgz
+      tar xvf setup_steamcmd.tgz
+
+      # Install squad server.
+      ./steamcmd.sh +login anonymous +force_install_dir /home/squad/server +app_update 403240 validate +quit
+
+      # Change config.
+      cd /home/squad/server/SquadGame/ServerConfig
+
+      sed -i -r 's/^(ServerName)=.*/\1="Public Sandbox"/' Server.cfg
+      sed -i -r 's/^(MaxPlayers)=.*/\1=12/' Server.cfg
+      sed -i -r 's/^(NumReservedSlots)=.*/\1=1/' Server.cfg
+      sed -i -r 's/^(PreventTeamChangeIfUnbalanced)=.*/\1=false/' Server.cfg
+        
+      echo "" > ServerMessages.cfg
+      cp /home/squad/MapRotation.cfg MapRotation.cfg
+      cat /home/squad/Admins.cfg >> Admins.cfg
+runcmd:
+  - chown squad /home/squad
+  - sudo -u squad bash /home/squad/setup.sh
+  - systemctl enable squad
+  - systemctl start squad

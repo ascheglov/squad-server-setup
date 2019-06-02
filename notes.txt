@@ -1,0 +1,24 @@
+# Create
+
+yc compute instance-group create --file yc-group-spec.yaml
+
+yc compute instance list
+
+# Status
+
+yc compute instance list --format json | jq -r .[].network_interfaces[0].primary_v4_address.one_to_one_nat.address > ips
+
+cat ips | while read addr; do echo $addr:; ssh -n admin@$addr tail /var/log/cloud-init.log; done
+cat ips | while read addr; do echo $addr:; ssh -n admin@$addr tail /var/log/cloud-init-output.log; done
+
+cat ips | while read addr; do echo $addr:; ssh -n admin@$addr sudo systemctl status squad; done
+
+# Config
+
+ssh admin@`head -1 ips` ls /home/squad/server/SquadGame/ServerConfig/
+
+cat ips | nl | while read idx addr; do echo $addr: $idx; ssh -n admin@$addr 'sudo sed -r -i "s/^ServerName=.*/ServerName=\"Finch'"'"'s Sandbox #'$idx'\"/" /home/squad/server/SquadGame/ServerConfig/Server.cfg'; done
+
+cat ips | nl | while read idx addr; do echo $addr: $idx; ssh -n admin@$addr cat /home/squad/server/SquadGame/ServerConfig/MapRotation.cfg; done
+cat ips | nl | while read idx addr; do echo $addr: $idx; ssh -n admin@$addr 'echo "Jensen'"'"'s Range v"'$idx' | sudo tee /home/squad/server/SquadGame/ServerConfig/MapRotation.cfg'; done
+
