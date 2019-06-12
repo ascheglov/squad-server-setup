@@ -20,7 +20,7 @@ write_files:
       #!/usr/bin/env bash
       set -e
       /home/squad/steamcmd/steamcmd.sh +login anonymous +force_install_dir /home/squad/server +app_update 403240 +quit
-      /home/squad/server/SquadGameServer.sh Port=7787 QueryPort=27165
+      /home/squad/server/SquadGameServer.sh Port=7787 QueryPort=27165 RCONIP=127.0.0.1 RCONPASSWORD=1
   - path: /etc/systemd/system/squad.service
     content: |
       [Unit]
@@ -38,15 +38,18 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
-  - path: /home/squad/MapRotation.cfg
+  - path: /home/admin/rcon.sh
+    permissions: '0555'
     content: |
-      Jensen's Range v1
-  - path: /home/squad/Admins.cfg
+      #!/usr/bin/env bash
+      PWD=1
+      CMD_LEN=$(echo -n "$*" | awk '{printf "%c", length($0)+10}')
+      echo -ne "\x0b\0\0\0id-1\x03\0\0\x00$PWD\0\x00$CMD_LEN\0\0\0id-2\x02\0\0\x00$*\0\0" | nc -w1 localhost 21114 | tail -c+41 | head -c-2
+  - path: /etc/cron.d/squad
     content: |
-      Group=All:changemap,pause,cheat,private,balance,chat,kick,ban,config,cameraman,immunity,featuretest,reserve,debug,teamchange,forceteamchange,canseeadminchat
-      Group=Mod:changemap,cheat,chat,cameraman,featuretest,reserve,teamchange,forceteamchange
-      Admin=76561198126672787:All
-      Admin=76561198012819918:Mod
+      SHELL=/bin/bash
+      00 * * * * admin ./rcon.sh AdminBroadcast Automatic map change in 1 minute
+      01 * * * * admin ./rcon.sh AdminEndMatch
   - path: /home/squad/setup.sh
     permissions: '0555'
     content: |
@@ -69,12 +72,30 @@ write_files:
       sed -i -r 's/^(MaxPlayers)=.*/\1=12/' Server.cfg
       sed -i -r 's/^(NumReservedSlots)=.*/\1=1/' Server.cfg
       sed -i -r 's/^(PreventTeamChangeIfUnbalanced)=.*/\1=false/' Server.cfg
-        
+
       echo "" > ServerMessages.cfg
-      cp /home/squad/MapRotation.cfg MapRotation.cfg
-      cat /home/squad/Admins.cfg >> Admins.cfg
+
+      cat << '__end_of_file__' >> Admins.cfg
+      Group=All:changemap,pause,cheat,private,balance,chat,kick,ban,config,cameraman,immunity,featuretest,reserve,debug,teamchange,forceteamchange,canseeadminchat
+      Group=Mod:changemap,cheat,chat,cameraman,featuretest,reserve,teamchange,forceteamchange
+      Admin=76561198126672787:All
+      Admin=76561198012819918:Mod
+      __end_of_file__
+
+      cat << '__end_of_file__' > MapRotation.cfg
+      Jensen's Range v1
+      Jensen's Range v2
+      Jensen's Range v3
+      __end_of_file__
+
+      cat << '__end_of_file__' > MOTD.cfg
+      Open training server.
+
+      Automatic map change at the beginning of every hour.
+      __end_of_file__
 runcmd:
-  - chown squad /home/squad
+  - 'chown -R squad:squad /home/squad'  # The 'write_files:' changes owner to root.
+  - 'chown -R admin:admin /home/admin'
   - sudo -u squad bash /home/squad/setup.sh
   - systemctl enable squad
   - systemctl start squad

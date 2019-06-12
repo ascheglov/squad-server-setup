@@ -24,7 +24,18 @@ cat ips | nl | while read idx addr; do echo $addr: $idx; ssh -n admin@$addr 'sud
 cat ips | nl | while read idx addr; do echo $addr: $idx; ssh -n admin@$addr cat /home/squad/server/SquadGame/ServerConfig/MapRotation.cfg; done
 cat ips | nl | while read idx addr; do echo $addr: $idx; ssh -n admin@$addr 'echo "Jensen'"'"'s Range v"'$idx' | sudo tee /home/squad/server/SquadGame/ServerConfig/MapRotation.cfg'; done
 
+cat ips | while read addr; do echo $addr:; ssh -n admin@$addr 'echo "Open testing server" | sudo tee /home/squad/server/SquadGame/ServerConfig/MOTD.cfg'; done
+
 # Rcon
 
-echo -n "ListPlayers" | perl -e '$s=<>; print pack("(VVVZ*x)2", 11, 1, 3, "p", length($s)+10, 2, 2, $s)' | nc -w1 localhost 21114
-python3 -c 'a=b"ListPlayers"; import struct,socket; s=socket.socket();s.connect(("127.0.0.1",21114));s.sendall(struct.pack(b"<IIIcxxIII",11,1,3,b"p",len(a)+10,2,2)+a+b"\0\0");print(s.recv(4096));print(s.recv(4096))'
+echo -n "ListPlayers" | xxd -p | awk '{printf("0b0000000100000003000000310000%.2x0000000200000002000000%s0000", length($0)/2+10, $0)}' | xxd -r -p | nc -w1 localhost 21114
+echo -n "ListPlayers" | perl -e '$s=<>; print pack("(VVVZ*x)2", 11, 1, 3, "1", length($s)+10, 2, 2, $s)' | nc -w1 localhost 21114
+
+python3:
+>>> s=socket.socket();s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True);s.connect(("127.0.0.1",21114));s.sendall(struct.pack(b'<IIIcxx',11,1,3,b'1'));s.sendall(struct.pack(b'<III',10+4,2,2)+b'help\0\0')
+>>> for x in range(10): print(s.recv(1000))
+
+
+
+./rcon.sh ListPlayers | grep -oP '(?<=SteamID: )[0-9]+(?= \| Name)' | xargs -n1 ./rcon.sh AdminAddCameraman
+
