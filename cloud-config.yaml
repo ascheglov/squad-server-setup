@@ -4,20 +4,18 @@ packages:
   - wget
   - ca-certificates
 users:
-  - name: admin
+  - name: abyx
     groups: sudo
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
     ssh-authorized-keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAsbP2NWjLUMLH5dIjwZx44VI2cJ++YmOvNi9U9lKH77Cq0Tex8dfS2SbixDyGonlXP77iHRlvqkYYlRxtIdqnPSjt1wNIQP7TTLM5Nqq2h0VNb7dWGZ5X4/exalDQndIa5T97SgncooLDshS3eGe0Mm/7Tpchrc4QOqtdfJoBMjACUZEPLNuicpKGexUt0E+OncVHmbFp0bjJoHTUbNUQFLhDKWsmBEbaxiyCTqRXIuVeZhFSj5lD5ezAtVp8V8A4sldoAVtwbkBJKcqqCx4XZGx8U6zyHyIgJOcK6AvqfalNpA4GlpAVh94kAxBjv+Js8MIahbIGPF2yirWG335PEQ== me@home
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfGkjydwgjvOG/1eeODMws5oMBWuTK2jajgXxpHC5H2PItz/wQBv058dHGQPkAX4Mg8dkfDpUnUvPc0Vn6YNbp4btSmwDUwdcWsdvMZi1re7jp3mArWznSsxlDsqCKs0vvB/0URbEHL0XXQWppUchWvlHI56iZEOoqAfNpAqlpER4eT4qmLyRLQald0+6W9m73CQBqSem6dY8e3FCtZbdxqf1GETErokeBZRYL29XKKli1pXCC3alJBgaCpvqlpnWN9AiSYEnHePVUVdj8oqPj1KgR005WD//WfOmInDUYds9VrJoGEU1j7DwuBPKUp+WoAEIe6DOf+7+WNnA1ZUDn me@work
-  - name: squad
-    sudo: False
 write_files:
   - path: /home/squad/run-server.sh
     permissions: '0555'
     content: |
-      #!/usr/bin/env bash
+      #!/bin/bash
       set -e
       /home/squad/steamcmd/steamcmd.sh +login anonymous +force_install_dir /home/squad/server +app_update 403240 +quit
       /home/squad/server/SquadGameServer.sh Port=7787 QueryPort=27165 RCONIP=127.0.0.1 RCONPASSWORD=1
@@ -38,22 +36,22 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
-  - path: /home/admin/rcon.sh
+  - path: /usr/local/bin/rcon
     permissions: '0555'
     content: |
-      #!/usr/bin/env bash
+      #!/bin/bash
       PWD=1
       CMD_LEN=$(echo -n "$*" | awk '{printf "%c", length($0)+10}')
       echo -ne "\x0b\0\0\0id-1\x03\0\0\x00$PWD\0\x00$CMD_LEN\0\0\0id-2\x02\0\0\x00$*\0\0" | nc -w1 localhost 21114 | tail -c+41 | head -c-2
   - path: /etc/cron.d/squad
     content: |
       SHELL=/bin/bash
-      00 * * * * admin ./rcon.sh AdminBroadcast Automatic map change in 1 minute
-      01 * * * * admin ./rcon.sh AdminEndMatch
+      00 * * * * squad /usr/local/bin/rcon AdminBroadcast Automatic map change in 1 minute
+      01 * * * * squad /usr/local/bin/rcon AdminEndMatch
   - path: /home/squad/setup.sh
     permissions: '0555'
     content: |
-      #!/usr/bin/env bash
+      #!/bin/bash
       set -e
 
       # Download steamcmd.
@@ -94,8 +92,8 @@ write_files:
       Automatic map change at the beginning of every hour.
       __end_of_file__
 runcmd:
-  - 'chown -R squad:squad /home/squad'  # The 'write_files:' changes owner to root.
-  - 'chown -R admin:admin /home/admin'
+  - useradd -d /home/squad squad
+  - 'chown -R squad:squad /home/squad'
   - sudo -u squad bash /home/squad/setup.sh
   - systemctl enable squad
   - systemctl start squad
