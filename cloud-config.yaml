@@ -11,6 +11,8 @@ users:
     ssh-authorized-keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAsbP2NWjLUMLH5dIjwZx44VI2cJ++YmOvNi9U9lKH77Cq0Tex8dfS2SbixDyGonlXP77iHRlvqkYYlRxtIdqnPSjt1wNIQP7TTLM5Nqq2h0VNb7dWGZ5X4/exalDQndIa5T97SgncooLDshS3eGe0Mm/7Tpchrc4QOqtdfJoBMjACUZEPLNuicpKGexUt0E+OncVHmbFp0bjJoHTUbNUQFLhDKWsmBEbaxiyCTqRXIuVeZhFSj5lD5ezAtVp8V8A4sldoAVtwbkBJKcqqCx4XZGx8U6zyHyIgJOcK6AvqfalNpA4GlpAVh94kAxBjv+Js8MIahbIGPF2yirWG335PEQ== me@home
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfGkjydwgjvOG/1eeODMws5oMBWuTK2jajgXxpHC5H2PItz/wQBv058dHGQPkAX4Mg8dkfDpUnUvPc0Vn6YNbp4btSmwDUwdcWsdvMZi1re7jp3mArWznSsxlDsqCKs0vvB/0URbEHL0XXQWppUchWvlHI56iZEOoqAfNpAqlpER4eT4qmLyRLQald0+6W9m73CQBqSem6dY8e3FCtZbdxqf1GETErokeBZRYL29XKKli1pXCC3alJBgaCpvqlpnWN9AiSYEnHePVUVdj8oqPj1KgR005WD//WfOmInDUYds9VrJoGEU1j7DwuBPKUp+WoAEIe6DOf+7+WNnA1ZUDn me@work
+  - name: squad
+    sudo: False
 write_files:
   - path: /home/squad/run-server.sh
     permissions: '0555'
@@ -66,10 +68,11 @@ write_files:
       # Change config.
       cd /home/squad/server/SquadGame/ServerConfig
 
-      sed -i -r 's/^(ServerName)=.*/\1="Public Sandbox"/' Server.cfg
+      sed -i -r 's/^(ServerName)=.*/\1="Finch'"'"'s Sandbox"/' Server.cfg
       sed -i -r 's/^(MaxPlayers)=.*/\1=12/' Server.cfg
       sed -i -r 's/^(NumReservedSlots)=.*/\1=1/' Server.cfg
       sed -i -r 's/^(PreventTeamChangeIfUnbalanced)=.*/\1=false/' Server.cfg
+      sed -i -r 's/^(TKAutoKickEnabled)=.*/\1=false/' Server.cfg
 
       echo "" > ServerMessages.cfg
 
@@ -92,7 +95,6 @@ write_files:
       Automatic map change at the beginning of every hour.
       __end_of_file__
 runcmd:
-  - useradd -d /home/squad squad
   - 'chown -R squad:squad /home/squad'
   - sudo -u squad bash /home/squad/setup.sh
   - systemctl enable squad
