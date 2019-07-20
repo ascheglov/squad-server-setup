@@ -81,6 +81,7 @@ write_files:
       Group=Mod:changemap,cheat,chat,cameraman,featuretest,reserve,teamchange,forceteamchange
       Admin=76561198126672787:All
       Admin=76561198012819918:Mod
+      Admin=76561198031480774:Mod
       __end_of_file__
 
       cat << '__end_of_file__' > MapRotation.cfg
