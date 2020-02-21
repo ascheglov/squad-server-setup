@@ -39,3 +39,18 @@ python3:
 
 ./rcon.sh ListPlayers | grep -oP '(?<=SteamID: )[0-9]+(?= \| Name)' | xargs -n1 ./rcon.sh AdminAddCameraman
 
+# Serial console access
+
+1) Disable ssh password auth:
+
+    usr@vm:~$ grep ^PasswordAuthentication /etc/ssh/sshd_config
+    PasswordAuthentication no
+
+2) Set password (use -d to reset):
+
+    usr@vm:~$ passwd
+
+3) Enable the serial console
+
+    usr@host:~$ yc compute instance add-metadata --name squad-vm --metadata serial-port-enable=1
+

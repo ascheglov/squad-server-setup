@@ -1,18 +1,22 @@
+# Update:
+#   $ yc compute instance-group update cl1pghaagb2b5tnmpp9t --file yc-ig-spec.yaml
+#
+
 name: squad-group
 service_account_id: aje70bbelrl4pvp2c4v8
 description: "Squad servers"
 instance_template:
   platform_id: standard-v2
   resources_spec:
-    memory: 4_294_967_296
+    memory: 4g
     cores: 2
     core_fraction: 100
   boot_disk_spec:
     mode: READ_WRITE
     disk_spec:
-      image_id: fd83i5r5g44fjkdpuuva
+      image_id: fd83bj827tp2slnpp7f0 # ubuntu-1804-lts-1579200157 (2020-01-16T18:45:38Z)
       type_id: network-hdd
-      size: 21_474_836_480
+      size: 20g
   network_interface_specs:
     - network_id: enpgniimbgke2vtfjlgj
       primary_v4_address_spec:

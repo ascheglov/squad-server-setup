@@ -45,11 +45,26 @@ write_files:
       PWD=1
       CMD_LEN=$(echo -n "$*" | awk '{printf "%c", length($0)+10}')
       echo -ne "\x0b\0\0\0id-1\x03\0\0\x00$PWD\0\x00$CMD_LEN\0\0\0id-2\x02\0\0\x00$*\0\0" | nc -w1 localhost 21114 | tail -c+41 | head -c-2
+  - path: /home/squad/map-change.sh
+    permissions: '0555'
+    content: |
+      #!/bin/bash
+      set +x
+      function ask {
+        /usr/local/bin/rcon AdminBroadcast Automatic map change in $1 seconds, say '"-"' to cancel
+        echo -ne "\x0b\0\0\0id-1\x03\0\0\0\x31\0\0" | nc -w 30 localhost 21114 | fgrep -zq ' : -' && {
+          /usr/local/bin/rcon AdminBroadcast Map change cancelled
+          exit
+        }
+      }
+
+      ask 60
+      ask 30
+      /usr/local/bin/rcon AdminEndMatch
   - path: /etc/cron.d/squad
     content: |
       SHELL=/bin/bash
-      00 * * * * squad /usr/local/bin/rcon AdminBroadcast Automatic map change in 1 minute
-      01 * * * * squad /usr/local/bin/rcon AdminEndMatch
+      0 * * * * squad /home/squad/map-change.sh > /home/squad/map-change.log 2>&1
   - path: /home/squad/setup.sh
     permissions: '0555'
     content: |

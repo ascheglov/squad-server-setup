@@ -1,0 +1,54 @@
+ListCommands <ShowDetails [0|1]> (Prints out the information for all commands in the game.)
+ListPermittedCommands <ShowDetails [0|1]> (Prints out the information for all commands the player is currently permitted to execute.) (not implemented)
+ShowCommandInfo <CommandName> (Prints out the details of a particular command)
+
+ListPlayers (List player ids with associated player name and SteamId)
+AdminListDisconnectedPlayers (List recently disconnected player ids with associated player name and SteamId)
+
+ListSquads (List Squads by their Index numbers's)
+AdminRemovePlayerFromSquadById <PlayerId> (Remove a player from their squad without kicking them via Id)
+AdminRemovePlayerFromSquad <PlayerName> (Remove a player from their squad without kicking them)
+AdminDisbandSquad <TeamNumber = [1|2]> <SquadIndex> (Disbands the specified Squad)
+
+ShowNextMap (Ask the server what the next map is)
+
+AdminKick "<NameOrSteamId>" <KickReason> (Kicks a player from the server)
+AdminKickById <PlayerId> <KickReason> (Kicks a player with Id from the server)
+
+AdminBan "<NameOrSteamId>" "<BanLength>" <BanReason> (Bans a player from the server for a length of time.  0 = Perm, 1d = 1 Day, 1M = 1 Month, etc)
+AdminBanById <PlayerId> "<BanLength>" <BanReason> (Bans player with Id from the server for length of time. 0 = Perm, 1d = 1 Day, 1M = 1 Month, etc)
+
+AdminForceTeamChange <NameOrSteamId> (Changes a player's team.)
+AdminForceTeamChangeById <PlayerId> (Changes a player with a certain id's team.)
+
+AdminWarn "<NameOrSteamId>" <WarnReason> (Warns a player from the server for being abusive.)
+AdminWarnById <PlayerId> <WarnReason> (Warns a player with Id from the server for being abusive.)
+
+ChatToAdmin <Message> (Send system message to all admins on the server)
+
+AdminBroadcast <Message> (Send system message to all players on the server)
+
+AdminRestartMatch (Tell the server to restart the match)
+AdminEndMatch (Tell the server to immediately end the match)
+AdminPauseMatch (Tell the server to put the match on hold)
+AdminUnpauseMatch (Tell the server to take off the hold)
+
+AdminKillServer <Force [0|1]> (Tells the server to stop execution)
+
+AdminChangeMap <MapName> (Change the map and travel to it immediately)
+AdminSetNextMap <MapName> (Set the next map to travel to after this match ends)
+
+AdminSetMaxNumPlayers <NumPlayers> (Set the maximum number of players for this server)
+AdminSetNumReservedSlots <NumReserved> (Set the number of reserved player slots)
+
+AdminSetServerPassword <Password> (Set the password for a server or use "" to remove it)
+
+AdminAddCameraman <NameOrId> (Add a player to the camera man list)
+
+AdminDemoRec <FileName> (Records gameplay, you must run this first)
+AdminDemoStop (Stops recording and saves the demo to disk)
+
+AdminForceNetUpdateOnClientSaturation <Enabled [0|1]> (If true, when a connection becomes saturated, all remaining actors that couldn't complete replication will have ForceNetUpdate called on them)
+
+AdminDemoteCommander <PlayerName> (Demote a commander specified by player name or Steam Id)
+AdminDemoteCommanderById <PlayerId> (Demote a commander with Id from the server)
