@@ -16,7 +16,7 @@ instance_template:
     disk_spec:
       image_id: fd83bj827tp2slnpp7f0 # ubuntu-1804-lts-1579200157 (2020-01-16T18:45:38Z)
       type_id: network-hdd
-      size: 20g
+      size: 30g
   network_interface_specs:
     - network_id: enpgniimbgke2vtfjlgj
       primary_v4_address_spec:
