@@ -1,6 +1,6 @@
 // Init:
 //
-// $ terraform init -backend-config="secret_key=$(...)"
+// $ terraform init
 //
 // Apply changes:
 //
@@ -29,8 +29,18 @@ resource "yandex_vpc_subnet" "subnet-c" {
   network_id     = yandex_vpc_network.default.id
 }
 
-resource "yandex_iam_service_account" "squad-ig-sa" {
-  name = "squad-ig-sa"
+resource "yandex_iam_service_account" "common" {
+  name = "squad-common-sa"
+}
+
+resource "yandex_resourcemanager_folder_iam_binding" "editor" {
+  folder_id = var.folder_id
+
+  role = "editor"
+
+  members = [
+    "serviceAccount:${yandex_iam_service_account.common.id}",
+  ]
 }
 
 data "yandex_compute_image" "ubuntu-latest" {
@@ -39,8 +49,7 @@ data "yandex_compute_image" "ubuntu-latest" {
 
 resource "yandex_compute_instance_group" "squad-group" {
   name               = "squad-group"
-  description        = "Squad servers"
-  service_account_id = yandex_iam_service_account.squad-ig-sa.id
+  service_account_id = yandex_iam_service_account.common.id
 
   instance_template {
     platform_id = "standard-v2"
