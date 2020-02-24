@@ -4,7 +4,11 @@
 //
 // Apply changes:
 //
-// $ YC_TOKEN=$(yc config get token) terraform apply
+// $ terraform apply
+
+data "external" "token" {
+  program = ["/bin/bash", "-c", "yc config get token | jq -Rn '{token: input}'"]
+}
 
 variable "cloud_id" {
   default = "b1g4aa5s77qtes5u9nq4"
@@ -17,6 +21,7 @@ variable "folder_id" {
 provider "yandex" {
   cloud_id  = var.cloud_id
   folder_id = var.folder_id
+  token     = data.external.token.result.token
 }
 
 resource "yandex_vpc_network" "default" {
